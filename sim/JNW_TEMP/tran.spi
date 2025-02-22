@@ -1,0 +1,108 @@
+*TB_SUN_TR_SKY130NM/TB_NCM
+
+
+
+*----------------------------------------------------------------
+* Include
+*----------------------------------------------------------------
+
+.include ../../../../cpdk/ngspice/ideal_circuits.spi
+
+
+#ifdef Lay
+.include ../../../work/lpe/JNW_TEMP_lpe.spi
+#else
+.include ../../../work/xsch/JNW_TEMP.spice
+#endif
+
+
+
+*-----------------------------------------------------------------
+* OPTIONS
+*-----------------------------------------------------------------
+.option TNOM=27 GMIN=1e-15 reltol=1e-3
+
+*-----------------------------------------------------------------
+* PARAMETERS
+*-----------------------------------------------------------------
+.param TRF = 10p
+
+.param AVDD = {vdda}
+
+.param PERIOD_CLK = 1/50e6
+
+.param PW_CLK = PERIOD_CLK/2
+
+*.ic v(xdut.x1.vd1) = 0.6
+*.ic v(xdut.x1.vr1) = 0.5
+
+*-----------------------------------------------------------------
+* FORCE
+*-----------------------------------------------------------------
+VSS  VSS  0     dc 0
+VDD  VDD_1V8  0 dc {AVDD}
+*VCLK clk 0 dc 0
+*VRESET reset 0 dc 0
+VCLK clk 0 dc 0 pulse (0 {AVDD} 0 {TRF} {TRF} {PW_CLK} {PERIOD_CLK})
+VRESET reset 0 dc {AVDD} pwl 0 {AVDD} {PW_CLK*2} {AVDD} {PW_CLK*2 + 1n} 0
+
+
+*-----------------------------------------------------------------
+* DUT
+*-----------------------------------------------------------------
+.include ../xdut.spi
+.include ../svinst.spi
+
+a1 PWM_1V8 din inv1
+.model inv1 d_inverter(rise_delay = 0.5e-12 fall_delay = 0.3e-12
++ input_load = 1f)
+aflop din CMPO_1V8 VSS VSS PWM_1V8 nout flop1
+*a7 data clk set reset out Nout  flop1
+.model flop1 d_dff(clk_delay = 13.0e-12 set_delay = 25.0e-12
++ reset_delay = 27.0e-12 ic = 0 rise_delay = 10.0e-12
++ fall_delay = 10e-12 data_load=1f set_load=1f reset_load=1f clk_load=1f)
+
+R1 PWM_1V8 0 1G
+R3 din 0 1G
+R2 nout 0 1G
+
+.save V(PWM_1V8) v(din)
+
+*----------------------------------------------------------------
+* PROBE
+*----------------------------------------------------------------
+.save all
+
+
+*----------------------------------------------------------------
+* NGSPICE control
+*----------------------------------------------------------------
+.control
+set num_threads=8
+set color0=white
+set color1=black
+unset askquit
+
+*- Override the default digital output bridge.
+pre_set auto_bridge_d_out =
+     + ( ".model auto_dac dac_bridge(out_low = 0.0 out_high = 1.8)"
+     +   "auto_bridge%d [ %s ] [ %s ] auto_dac" )
+
+
+optran 0 0 0 1n 1u 0
+
+
+set fend = .raw
+foreach vtemp {temperatures}
+  option temp=$vtemp
+  tran 10n 8u 1u
+  write {cicname}_$vtemp$fend
+end
+quit
+
+quit
+
+
+.endc
+
+.end

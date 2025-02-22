@@ -17,3 +17,8 @@ jnw_tr_sky130a:
 jnw_atr_sky130a:
   remote: git@github.com:analogicus/jnw_atr_sky130A.git
   revision: main
+
+#- Bias source
+jnw_bias_sky130a:
+  remote: git@github.com:wulffern/jnw_bias_sky130A.git
+  revision: main

@@ -1,0 +1,18 @@
+* Measure JNW_TEMP
+.control
+
+load {cicname}.raw
+
+echo "MEAS_START"
+
+set fend = .raw
+foreach vtemp {temperatures}
+
+ load {cicname}_$vtemp$fend
+ meas tran thigh_$vtemp TRIG v(pwm_1v8) val=0.9 rise=1 TARG v(pwm_1v8) val=0.9 fall=1
+ meas tran tlow_$vtemp TRIG v(pwm_1v8) val=0.9 fall=1 TARG v(pwm_1v8) val=0.9 rise=2
+
+end
+
+echo "MEAS_END"
+.endc
