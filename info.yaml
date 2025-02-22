@@ -1,20 +1,23 @@
 library: JNW_TEMP_SKY130A
 cell: JNW_TEMP
 # Your name
-author: Anonymous
+author: Carsten Wulff
 # Your github username
-github: analogicus
+github: wulffern
 # Something funny and descriptive
-tagline: The answer is 42
+tagline: Ideal temperature sensor
 # Your email, if you so wish
-email: anon@anon.com
+email: carsten@wulff.no
 # Your github site, usually <github username>.github.io
-url: analogicus.github.io
+url: analogicus.com
 doc:
   # Make docs
-  #libraries:
-  #   <library>:
-  #       - <cell>
-  #       - <cell>
+  libraries:
+    JNW_TEMP_SKY130A:
+      - JNW_TEMP
+      - TB_JNW_TEMP_OP
+    JNW_BIAS_SKY130A:
+      - JNW_BIAS
+      - JNW_BIAS_IBS
 sim:
-  # <simdir>: command
+   JNW_TEMP: make typical
