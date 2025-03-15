@@ -2,7 +2,7 @@
 
 all: typical etc mc summary
 
-mynetlist: netlist
+mynetlist: netlist  ../../rtl/dig.v
 	-rm dig.so
 	-rm -rf dig_obj_dir
 	ngspice vlnggen ../../rtl/dig.v
@@ -26,16 +26,16 @@ typical: mynetlist
 	cicsim run --replace replace.yaml --name ${VIEW}_typical ${TB} ${COPT} ${VIEW} Gt Ktt Tt Vt
 
 slow: mynetlist
-	cicsim run --replace replace.yaml --name ${VIEW}_slow ${TB} ${COPT} ${VIEW} Gt Kss "Th,Tl" Vl
+	cicsim run --replace replace.yaml --name ${VIEW}_slow ${TB} ${COPT} ${VIEW} Gt Kss "Tt" Vl
 
 fast: mynetlist
-	cicsim run --replace replace.yaml --name ${VIEW}_fast ${TB} ${COPT} ${VIEW} Gt Kff "Th,Tl" Vh
+	cicsim run --replace replace.yaml --name ${VIEW}_fast ${TB} ${COPT} ${VIEW} Gt Kff "Tt" Vh
 
 tfs: mynetlist
 	cicsim run --replace replace.yaml --name ${VIEW}_tfs ${TB} ${COPT} ${VIEW} Gt "Ktt,Kss,Kff" "Tt,Th,Tl" "Vt,Vl,Vh"
 
 etc: mynetlist
-	cicsim run --replace replace.yaml --name ${VIEW}_etc ${TB} ${COPT} ${VIEW} Gt "Kss,Kff,Ksf,Kfs" "Th,Tl" "Vl,Vh"
+	cicsim run --replace replace.yaml --name ${VIEW}_etc ${TB} ${COPT} ${VIEW} Gt "Kss,Kff,Ksf,Kfs" "Tt" "Vl,Vh"
 
 mc: mynetlist
 	cicsim run --replace replace.yaml --name ${VIEW}_mc --count 30 ${TB} ${COPT} ${VIEW} Gt "Kttmm" "Tt" "Vt"

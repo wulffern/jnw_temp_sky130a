@@ -8,9 +8,14 @@ echo "MEAS_START"
 set fend = .raw
 foreach vtemp {temperatures}
 
- load {cicname}_$vtemp$fend
- meas tran thigh_$vtemp TRIG v(pwm_1v8) val=0.9 rise=1 TARG v(pwm_1v8) val=0.9 fall=1
- meas tran tlow_$vtemp TRIG v(pwm_1v8) val=0.9 fall=1 TARG v(pwm_1v8) val=0.9 rise=2
+load {cicname}_$vtemp$fend
+*let cut-tstart=4.5u
+*let cut-tstop=6u
+*cutout
+meas tran thigh_$vtemp TRIG v(pwm_1v8) val=0.9 rise=1 TARG v(pwm_1v8) val=0.9 fall=1
+meas tran tlow_$vtemp TRIG v(pwm_1v8) val=0.9 fall=1  TARG v(pwm_1v8) val=0.9 rise=2
+
+
 
 end
 

@@ -20,7 +20,8 @@
 *-----------------------------------------------------------------
 * OPTIONS
 *-----------------------------------------------------------------
-.option TNOM=27 GMIN=1e-15 reltol=1e-3
+.option TNOM=27 GMIN=1e-15
+*reltol=1e-4 method=gear
 
 *-----------------------------------------------------------------
 * PARAMETERS
@@ -33,18 +34,18 @@
 
 .param PW_CLK = PERIOD_CLK/2
 
-*.ic v(xdut.x1.vd1) = 0.6
-*.ic v(xdut.x1.vr1) = 0.5
+.param TSTART = 10n
 
 *-----------------------------------------------------------------
 * FORCE
 *-----------------------------------------------------------------
 VSS  VSS  0     dc 0
-VDD  VDD_1V8  0 dc {AVDD}
+VDD  VDD_1V8  0 pwl 0 0 {TSTART/2} {AVDD}
 *VCLK clk 0 dc 0
 *VRESET reset 0 dc 0
-VCLK clk 0 dc 0 pulse (0 {AVDD} 0 {TRF} {TRF} {PW_CLK} {PERIOD_CLK})
-VRESET reset 0 dc {AVDD} pwl 0 {AVDD} {PW_CLK*2} {AVDD} {PW_CLK*2 + 1n} 0
+VCLK clk 0 dc 0 pulse (0 {AVDD} {TSTART} {TRF} {TRF} {PW_CLK} {PERIOD_CLK})
+VRESET reset 0 dc {AVDD} pwl {TSTART} {AVDD} {PW_CLK} {AVDD} {PW_CLK*2} 0
+
 
 
 *-----------------------------------------------------------------
@@ -53,25 +54,31 @@ VRESET reset 0 dc {AVDD} pwl 0 {AVDD} {PW_CLK*2} {AVDD} {PW_CLK*2 + 1n} 0
 .include ../xdut.spi
 .include ../svinst.spi
 
-a1 PWM_1V8 din inv1
-.model inv1 d_inverter(rise_delay = 0.5e-12 fall_delay = 0.3e-12
-+ input_load = 1f)
-aflop din CMPO_1V8 VSS VSS PWM_1V8 nout flop1
-*a7 data clk set reset out Nout  flop1
-.model flop1 d_dff(clk_delay = 13.0e-12 set_delay = 25.0e-12
-+ reset_delay = 27.0e-12 ic = 0 rise_delay = 10.0e-12
-+ fall_delay = 10e-12 data_load=1f set_load=1f reset_load=1f clk_load=1f)
+*- Fakearoony to get the digital sha included. Never actually included
+*#include ../../../rtl/dig.v
 
-R1 PWM_1V8 0 1G
-R3 din 0 1G
-R2 nout 0 1G
 
-.save V(PWM_1V8) v(din)
 
+.save V(PWM_1V8)
+.save v(din)
+.save v(xdut.xibps.vr1)
+.save v(xdut.xibps.vd1)
+.save v(xdut.xibps.vd2)
+.save v(xdut.xibp.vd2)
+.save v(xdut.xibp.vd1)
+.save v(xdut.xibp.vr1)
+.save v(xdut.ibps_1u<2>)
+.save v(xdut.ibps_1u<1>)
+.save v(xdut.ibp_1u<0>)
+.save v(xdut.ibp_1u<2>)
+.save v(xdut.ibp_1u<3>)
+.save v(xdut.ibp_1u<1>) v(CMPO_1V8) v(xdut.vip)
 *----------------------------------------------------------------
 * PROBE
 *----------------------------------------------------------------
+#ifdef Nosweep
 .save all
+#endif
 
 
 *----------------------------------------------------------------
@@ -93,12 +100,19 @@ optran 0 0 0 1n 1u 0
 
 
 set fend = .raw
+#ifdef Nosweep
+*.option temp=42.5
+*.option temp=-40
+tran 1n 6u
+write {cicname}.raw
+#else
 foreach vtemp {temperatures}
   option temp=$vtemp
-  tran 10n 8u 1u
+  tran 1n 10u 4u
   write {cicname}_$vtemp$fend
 end
-quit
+
+#endif
 
 quit
 
